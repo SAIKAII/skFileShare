@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>自写弹窗</title>
+</head>
+<!-- 样式 -->
+<style type="text/css">
+	/* 弹窗 (background) */
+.modal {
+    display: none; /* 默认隐藏 */
+    /*生成绝对定位的元素，相对于浏览器窗口进行定位。*/
+    position: fixed; 
+    z-index: 1; 
+    left: 0;
+    top: 0;
+    /*设置弹窗位置*/
+    padding-top: 200px;
+    padding-bottom: 300px;
+    /*浮在全屏上*/
+    width: 100%; 
+    height:  100%; 
+    /*overflow：auto；如果内容被修剪，则浏览器会显示滚动条，以便查看其余内容。*/
+    overflow: auto; 
+    background-color: rgb(0,0,0); 
+    background-color: rgba(0,0,0,0.4);
+    text-align: center;
+}
+
+/* 弹窗内容 */
+.modal-content {
+    /*position: relative;*/
+    /*弹窗背景色设置*/
+    background-color: #fefefe;
+    margin: auto;
+    padding: 200px auto;
+    /* width: 400px; */
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    -webkit-animation-name: animatetop;
+    -webkit-animation-duration: 0.4s;
+    animation-name: animatetop;
+    animation-duration: 0.4s
+}
+
+/* 添加动画 */
+@-webkit-keyframes animatetop {
+    from {top:-200px; opacity:0} 
+    to {top:0; opacity:1}
+}
+
+@keyframes animatetop {
+    from {top:-200px; opacity:0}
+    to {top:0; opacity:1}
+}
+
+/* 关闭按钮 */
+.close {
+    color: white;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover, .close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-header {
+	display: block;
+	line-height: 20px;
+    padding: 2px 5px;
+    background-color: #66cccc;
+    color: white;
+    text-align: left;
+}
+
+.modal-body {
+	padding: 2px 16px;
+	font-size: 18px;
+	height: 200px;
+}
+
+</style>
+<!-- js -->
+<script type="text/javascript">
+	function openwindow(){
+		//获取弹窗得div
+		var modal = document.getElementById('myModal');
+        // 用于修改窗口大小
+        var con = document.getElementById("window-content");
+		// 获取 <span> 元素，用于关闭弹窗 （X）
+		var span = document.getElementsByClassName("close")[0];
+		//窗体弹出
+		modal.style.display = "block";
+        con.style.height = document.documentElement.clientHeight*0.6+"px";
+        con.style.width = document.documentElement.clientWidth*0.4+"px";
+		// 点击 <span> (x), 关闭弹窗
+		span.onclick = function() {
+			//直接关闭窗口
+			modal.style.display = "none";
+		}
+		// 在用户点击其他地方时，关闭弹窗
+		window.onclick = function(event) {
+			//点击窗口外内容，关闭窗口
+			if (event.target == modal) modal.style.display = "none";
+		}
+	}
+</script>
+<body>
+	<div align="center" style="margin: 50 auto">
+		<h2>自定义弹窗设计</h2>
+		<button onclick="openwindow()">打开弹窗</button>
+	</div>
+	<!-- 弹窗隐藏区域 -->
+	<div id="myModal" class="modal">
+		  <!-- 弹窗内容 -->
+			<div class="modal-content" id="window-content">
+			  <div class="modal-header">
+			    <span class="close">&times;</span>
+			    <h2 style="text-align: center;">文件</h2>
+			  </div>
+			  <div class="modal-body">
+			  </div>
+			</div>
+	</div>
+</body>
+</html>

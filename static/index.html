@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"> -->
+    <title>开始使用</title>
+    <link rel="stylesheet" href="./layui/css/layui.css">
+    <script src="./layui/layui.js"></script>
+    <script type="text/javascript" src="./js/jquery-3.4.1.js"></script>
+    <script type="text/javascript" src="./js/index.js"></script>
+    <style>
+        body{
+            background-color: #eeeeee;
+        }
+        .im-logo{
+            width: auto;
+            height: 60px;
+            line-height: 60px;
+            text-align: center;
+        }
+        .im-body{
+            /* width: 60%; */
+            overflow-y: auto;
+            border: solid 1px dimgray;
+            text-align: left;
+            font-size: large;
+        }
+        .im-content{
+            height: 70%;
+        }
+        .file{
+            height: 150%;
+            padding: 10px;
+        }
+        .file_icon{
+            font-size: 80px;
+            margin: auto;
+        }
+        .item{
+            width: 110px;
+            height: 110px;
+            margin: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout" id="div-all">
+    <div class="layui-header layui-bg-blue">
+        <div class="im-logo"><h1>Chatroom-v0.01</h1></div>
+    </div>
+    <div class="layui-tab layui-tab-card" style="height: 100%;width: 60%; margin: auto" lay-filter="im_body">
+        <ul class="layui-tab-title">
+            <li class="layui-this">聊天室</li>
+            <li onclick="getFiles()">文件分享</li>
+        </ul>
+        <div class="layui-tab-content im-content" style="padding: 0px;">
+            <div class="layui-tab-item layui-show" style="height: 100%;">
+                <div class="im-body" id="dialog" style="height: 100%;">
+                    <br/>
+                </div>
+                <div class="im-body">
+                    <input type="text" id="msg" placeholder="在此处输入要发送的消息..." style="width: 80%; font-size: 30px;"/>
+                    <i class="layui-icon layui-icon-release" onclick="sendMsg('msg')" style="font-size: 30px;"></i>
+                </div>
+            </div>
+            <div class="layui-tab-item" style="height: 100%;">
+                <div style="display: flex; flex-wrap: wrap; overflow: auto; height: 100%;" id="files-list"></div>
+            </div>
+        </div>
+    </div>
+</dvi>
+</body>
+</html>
