@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"regexp"
 
@@ -78,6 +79,40 @@ func GetFiles(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("返回目录下内容信息的时候发生错误：%s", err)
+	}
+}
+
+// UploadFile 客户端上传文件到服务器，共享给其他用户
+func UploadFile(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(32); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("上传文件时解析出现错误：%s", err)
+		return
+	}
+
+	if f, h, e := r.FormFile("upload-file"); e == nil {
+		defer func() { _ = f.Close() }()
+		name := filepath.Base(h.Filename)
+		pathSub := r.PostFormValue("path")
+		fileSavePath := "./files/" + pathSub + "/" + name
+		log.Printf("文件保存路径：%s", fileSavePath)
+		file, err := os.Create(fileSavePath)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("保存文件时出错，原因是：%s", err)
+			return
+		}
+
+		defer file.Close()
+		if _, err := io.Copy(file, f); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("写入文件时出错，原因是：%s", err)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("解析请求参数时出错，原因是：%s", e)
 	}
 }
 
