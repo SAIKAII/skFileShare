@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -84,6 +85,10 @@ func GetFiles(w http.ResponseWriter, r *http.Request) {
 
 // UploadFile 客户端上传文件到服务器，共享给其他用户
 func UploadFile(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(r)
+	w.WriteHeader(http.StatusOK)
+	return
+
 	if err := r.ParseMultipartForm(32); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("上传文件时解析出现错误：%s", err)

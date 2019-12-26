@@ -53,6 +53,7 @@ function getFiles() {
             for (var p in data){
                 addItem(data[p]);
             }
+            console.log(server_host);
         }
     })
 }
@@ -74,3 +75,18 @@ function addItem(entry) {
     
     $("<p></p>").css('text-overflow', 'ellipsis').css('overflow', 'hidden').css('white-space', 'nowrap').text(entry.name).appendTo(item);
 }
+
+layui.use('upload', function() {
+    var upload = layui.upload;
+    console.log(server_host);
+    var uploadInst = upload.render({
+        elem: '#uploadBtn',
+        url: 'http://localhost:8080/upload',
+        done: function(res, index, upload) {
+            // 上传完毕回调函数
+        },
+        error: function() {
+            // 请求异常回调函数
+        }
+    });
+});
