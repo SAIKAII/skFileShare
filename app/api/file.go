@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -13,6 +12,11 @@ import (
 
 	"github.com/SAIKAII/chatroom-backend/pkg/fileinfo"
 )
+
+type retData struct {
+	Status  int    `json:"status"`
+	Message string `json:"message"`
+}
 
 var fileRegexp *regexp.Regexp
 var dirRegexp *regexp.Regexp
@@ -85,12 +89,12 @@ func GetFiles(w http.ResponseWriter, r *http.Request) {
 
 // UploadFile 客户端上传文件到服务器，共享给其他用户
 func UploadFile(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r)
-	w.WriteHeader(http.StatusOK)
-	return
-
 	if err := r.ParseMultipartForm(32); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		ret, _ := json.Marshal(&retData{
+			Status:  400,
+			Message: "请求有误",
+		})
+		w.Write(ret)
 		log.Printf("上传文件时解析出现错误：%s", err)
 		return
 	}
@@ -103,20 +107,37 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		log.Printf("文件保存路径：%s", fileSavePath)
 		file, err := os.Create(fileSavePath)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			ret, _ := json.Marshal(&retData{
+				Status:  500,
+				Message: "保存文件时发生了错误",
+			})
+			w.Write(ret)
 			log.Printf("保存文件时出错，原因是：%s", err)
 			return
 		}
 
 		defer file.Close()
 		if _, err := io.Copy(file, f); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			ret, _ := json.Marshal(&retData{
+				Status:  500,
+				Message: "保存文件时发生了错误",
+			})
+			w.Write(ret)
 			log.Printf("写入文件时出错，原因是：%s", err)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
+
+		ret, _ := json.Marshal(&retData{
+			Status:  200,
+			Message: "文件已保存",
+		})
+		w.Write(ret)
 	} else {
-		w.WriteHeader(http.StatusBadRequest)
+		ret, _ := json.Marshal(&retData{
+			Status:  400,
+			Message: "请求有误",
+		})
+		w.Write(ret)
 		log.Printf("解析请求参数时出错，原因是：%s", e)
 	}
 }

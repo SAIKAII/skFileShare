@@ -8,6 +8,9 @@ var ws;
 var server_host;
 window.onload = function () {
     this.server_host = window.location.host;
+
+    $('#uploadBtn').attr('lay-data', '{url:'+'"/upload"}')
+
     var divAll = document.getElementById("div-all");
     divAll.style.height = document.documentElement.clientHeight + "px";
     ws = new WebSocket("ws://localhost:8080/ws");
@@ -81,9 +84,12 @@ layui.use('upload', function() {
     console.log(server_host);
     var uploadInst = upload.render({
         elem: '#uploadBtn',
-        url: 'http://localhost:8080/upload',
-        done: function(res, index, upload) {
+        // url: 'http://localhost:8080/upload',
+        field: "upload-file",
+        accept: 'file',
+        done: function(res) {
             // 上传完毕回调函数
+            console.log(res);
         },
         error: function() {
             // 请求异常回调函数

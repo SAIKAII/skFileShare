@@ -17,7 +17,7 @@ func init() {
 		}
 	}
 
-	if err := os.MkdirAll("./files", os.ModeDir); err != nil {
+	if err := os.MkdirAll("./files", os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
 }
