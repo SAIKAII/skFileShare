@@ -9,11 +9,11 @@ var server_host;
 window.onload = function () {
     this.server_host = window.location.host;
 
-    $('#uploadBtn').attr('lay-data', '{url:'+'"/upload"}')
+    // $('#uploadBtn').attr('lay-data', '{url:'+'"/upload"}')
 
     var divAll = document.getElementById("div-all");
     divAll.style.height = document.documentElement.clientHeight + "px";
-    ws = new WebSocket("ws://localhost:8080/ws");
+    ws = new WebSocket("ws://" + this.server_host + "/ws");
     ws.onmessage = function (evt) {
         var content = document.getElementById("dialog");
         var str = JSON.parse(evt.data);
@@ -56,7 +56,6 @@ function getFiles() {
             for (var p in data){
                 addItem(data[p]);
             }
-            console.log(server_host);
         }
     })
 }
@@ -79,12 +78,12 @@ function addItem(entry) {
     $("<p></p>").css('text-overflow', 'ellipsis').css('overflow', 'hidden').css('white-space', 'nowrap').text(entry.name).appendTo(item);
 }
 
-layui.use('upload', function() {
+layui.use(['upload', 'element'], function() {
     var upload = layui.upload;
-    console.log(server_host);
+    var element = layui.element;
     var uploadInst = upload.render({
         elem: '#uploadBtn',
-        // url: 'http://localhost:8080/upload',
+        url: "/upload",
         field: "upload-file",
         accept: 'file',
         done: function(res) {
@@ -93,6 +92,11 @@ layui.use('upload', function() {
         },
         error: function() {
             // 请求异常回调函数
+        },
+        progress: function (n, e) {
+            console.log(n);
+            var percent = n + '%';
+            element.progress('upload-prog', percent);
         }
     });
 });

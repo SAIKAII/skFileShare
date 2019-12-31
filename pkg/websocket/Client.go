@@ -34,7 +34,7 @@ func (c *Client) Read() {
 
 		fmt.Println(string(p))
 		message := Message{
-			IP:   c.Conn.RemoteAddr().Network(),
+			IP:   c.Conn.RemoteAddr().String(),
 			Type: messageType,
 			Body: string(p),
 		}
