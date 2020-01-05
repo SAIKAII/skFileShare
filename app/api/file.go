@@ -2,13 +2,12 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
-	"regexp"
 
 	"github.com/SAIKAII/chatroom-backend/pkg/fileinfo"
 )
@@ -18,54 +17,51 @@ type retData struct {
 	Message string `json:"message"`
 }
 
-var fileRegexp *regexp.Regexp
-var dirRegexp *regexp.Regexp
+func newRetData(status int, message string) []byte {
+	ret, err := json.Marshal(&retData{
+		Status:  status,
+		Message: message,
+	})
+	if err != nil {
+		log.Printf("error: %s", err)
+		return nil
+	}
 
-// GetSpecifiedFiles 用于下载指定文件
+	return ret
+}
+
+// GetSpecifiedFile 用于下载指定文件
 func GetSpecifiedFile(w http.ResponseWriter, r *http.Request) {
-	path, err := url.QueryUnescape(r.RequestURI)
+	r.ParseForm()
+	fmt.Println(r.FormValue("file"))
+	filename := r.FormValue("file")
+	p := filepath.Join("./files/", filename)
+	err := fileinfo.DownloadFile(p, w)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+		if e, ok := err.(fileinfo.FileNotExistError); ok {
+			w.WriteHeader(http.StatusNotFound)
+			log.Println(e.Error())
+			return
+		}
 
-	ret := fileRegexp.FindStringSubmatch(path)
-	if len(ret) < 2 {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	p := filepath.Join("./files", ret[len(ret)-1])
-	err = fileinfo.DownloadFile(p, w)
-	if e, ok := err.(fileinfo.FileNotExistError); ok {
-		w.WriteHeader(http.StatusNotFound)
-		log.Println(e.Error())
-	}
-	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("获取文件时发生内部错误：%s\n", err)
 		return
 	}
 }
 
-// GetFiles 用于把共享目录下的所有文件信息遍历返回前端
-func GetFiles(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.RequestURI)
-	uri, err := url.QueryUnescape(r.RequestURI)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("遍历目录请求的参数出错")
-		return
-	}
+// GetFilesInfo 用于把共享目录下的所有文件信息遍历返回前端
+func GetFilesInfo(w http.ResponseWriter, r *http.Request) {
+	// r.ParseForm()
+	// dir := r.FormValue("dir")
 
-	dir := dirRegexp.FindStringSubmatch(uri)
-	var path string
-	if len(dir) > 1 {
-		path = filepath.Join("./files", dir[len(dir)-1])
-	} else {
-		path = "./files"
-	}
-
+	// var path string
+	// if len(dir) > 0 {
+	// 	path = filepath.Join("./files", dir)
+	// } else {
+	// 	path = "./files"
+	// }
+	path := "./files"
 	files, err := fileinfo.GetFilesInfo(path)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -90,10 +86,11 @@ func GetFiles(w http.ResponseWriter, r *http.Request) {
 // UploadFile 客户端上传文件到服务器，共享给其他用户
 func UploadFile(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(32); err != nil {
-		ret, _ := json.Marshal(&retData{
-			Status:  400,
-			Message: "请求有误",
-		})
+		ret := newRetData(400, "请求有误")
+		if ret == nil {
+			return
+		}
+
 		w.Write(ret)
 		log.Printf("上传文件时解析出现错误：%s", err)
 		return
@@ -107,10 +104,11 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		log.Printf("文件保存路径：%s", fileSavePath)
 		file, err := os.Create(fileSavePath)
 		if err != nil {
-			ret, _ := json.Marshal(&retData{
-				Status:  500,
-				Message: "保存文件时发生了错误",
-			})
+			ret := newRetData(500, "保存文件时发生了错误")
+			if ret == nil {
+				return
+			}
+
 			w.Write(ret)
 			log.Printf("保存文件时出错，原因是：%s", err)
 			return
@@ -118,39 +116,63 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 
 		defer file.Close()
 		if _, err := io.Copy(file, f); err != nil {
-			ret, _ := json.Marshal(&retData{
-				Status:  500,
-				Message: "保存文件时发生了错误",
-			})
+			ret := newRetData(500, "保存文件时发生了错误")
+			if ret == nil {
+				return
+			}
+
 			w.Write(ret)
 			log.Printf("写入文件时出错，原因是：%s", err)
 			return
 		}
 
-		ret, _ := json.Marshal(&retData{
-			Status:  200,
-			Message: "文件已保存",
-		})
+		ret := newRetData(200, "文件已保存")
+		if ret == nil {
+			return
+		}
+
 		w.Write(ret)
 	} else {
-		ret, _ := json.Marshal(&retData{
-			Status:  400,
-			Message: "请求有误",
-		})
+		ret := newRetData(400, "请求有误")
+		if ret == nil {
+			return
+		}
+
 		w.Write(ret)
 		log.Printf("解析请求参数时出错，原因是：%s", e)
 	}
 }
 
-func init() {
-	var err error
-	fileRegexp, err = regexp.Compile("^/getfile/(.*)$")
+// RemoveFile 删除指定文件
+func RemoveFile(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	file := r.FormValue("file")
+	p := filepath.Join("./files", file)
+	err := fileinfo.DeleteFile(p)
 	if err != nil {
-		log.Fatal(err)
+		if _, ok := err.(fileinfo.FileNotExistError); ok {
+			ret := newRetData(404, "指定文件不存在")
+			if ret == nil {
+				return
+			}
+
+			w.Write(ret)
+			return
+		}
+		ret := newRetData(500, "删除文件时发生错误")
+		if ret == nil {
+			return
+		}
+
+		w.Write(ret)
+		log.Printf("删除文件时发生错误，原因是： %s", err)
+		return
 	}
 
-	dirRegexp, err = regexp.Compile("^/getfiles/?(.*)$")
-	if err != nil {
-		log.Fatal(err)
+	ret := newRetData(200, "文件已成功删除")
+	if ret == nil {
+		return
 	}
+
+	w.Write(ret)
 }

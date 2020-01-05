@@ -16,8 +16,9 @@ func init() {
 	})
 
 	http.HandleFunc("/getfile/", api.GetSpecifiedFile)
-	http.HandleFunc("/getfiles/", api.GetFiles)
+	http.HandleFunc("/getfiles/", api.GetFilesInfo)
 	http.HandleFunc("/upload", api.UploadFile)
+	http.HandleFunc("/delete/", api.RemoveFile)
 	// mime.AddExtensionType(".js", "text/javascript")
 	// mime.AddExtensionType(".css", "text/css")
 	// http.Handle("/room/", http.StripPrefix("/room/", http.FileServer(http.Dir("template/"))))

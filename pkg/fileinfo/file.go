@@ -106,3 +106,19 @@ func SaveFile(filename string, data []byte) (*FileInfo, error) {
 	}
 	return fileInfo, nil
 }
+
+// DeleteFile 删除指定文件
+func DeleteFile(filename string) error {
+	if _, err := os.Stat(filename); err != nil {
+		if os.IsNotExist(err) {
+			return FileNotExistError{filename: filename}
+		}
+		return err
+	}
+
+	if err := os.Remove(filename); err != nil {
+		return err
+	}
+
+	return nil
+}

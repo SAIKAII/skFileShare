@@ -63,8 +63,16 @@ function getFiles() {
 function addItem(entry) {
     var item = $("<div></div>").addClass('item');
     $('#files-list').append(item);
+    var del = $("<p></p>").css('text-align', 'right').appendTo(item);
+    // $("<b></b>").addClass('layui-icon layui-icon-delete').css('cursor', 'pointer').appendTo(del).bind(deleteFile(encodeURIComponent(entry.name)));
+    $("<b></b>").addClass('layui-icon layui-icon-delete').css('cursor', 'pointer').appendTo(del).click(function(){
+        if(confirm("确认删除该文件？"))
+        {
+            deleteFile(encodeURIComponent(entry.name));
+        }
+    });
     var hyper = $("<a></a>");
-    hyper.attr('href', 'http://' + server_host + '/getfile/' + entry.name).attr('download', entry.name);
+    hyper.attr('href', 'http://' + server_host + '/getfile?file=' + encodeURIComponent(entry.name)).attr('download', entry.name);
     hyper.attr('target', '_blank');
     hyper.appendTo(item);
     var file_icon = $("<p></p>");
@@ -76,6 +84,16 @@ function addItem(entry) {
     }
     
     $("<p></p>").css('text-overflow', 'ellipsis').css('overflow', 'hidden').css('white-space', 'nowrap').text(entry.name).appendTo(item);
+}
+
+function deleteFile(filename) {
+    $.ajax({
+        type: "DELETE",
+        url: "http://" + server_host + "/delete?file=" + filename,
+        success: function(data) {
+            alert("文件删除成功");
+        }
+    })
 }
 
 layui.use(['upload', 'element'], function() {
